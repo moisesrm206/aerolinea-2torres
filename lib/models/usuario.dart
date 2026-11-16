@@ -1,3 +1,5 @@
+import 'package:aerolinea/models/datos_cliente.dart';
+import 'package:aerolinea/models/datos_empleado.dart';
 
 class Usuario {
   final String uid;
@@ -7,8 +9,8 @@ class Usuario {
   final String telefono;
   final String rol;
   final bool activo;
-  final Map<String, dynamic> datosCliente;
-  final Map<String, dynamic> datosEmpleado;
+  final DatosCliente? datosCliente;
+  final DatosEmpleado? datosEmpleado;
   final String password;
 
   Usuario({
@@ -20,10 +22,9 @@ class Usuario {
     required this.rol,
     required this.activo,
     required this.password,
-    Map<String, dynamic>? datosCliente,
-    Map<String, dynamic>? datosEmpleado,
-  })  : datosCliente = datosCliente ?? {},
-        datosEmpleado = datosEmpleado ?? {};
+    this.datosCliente,
+    this.datosEmpleado,
+  });
 
   factory Usuario.fromMap(Map<String, dynamic> map) {
     return Usuario(
@@ -34,11 +35,15 @@ class Usuario {
       telefono: map['telefono'] ?? '',
       rol: map['rol'] ?? 'cliente',
       activo: map['activo'] ?? true,
-      datosCliente: Map<String, dynamic>.from(
-          map['datos_cliente'] ?? {}),
-      datosEmpleado: Map<String, dynamic>.from(
-          map['datos_empleado'] ?? {}),
-        password: map['contraseña'] ?? ''
+      datosCliente: map['datos_cliente'] != null
+          ? DatosCliente.fromMap(
+              Map<String, dynamic>.from(map['datos_cliente']))
+          : null,
+      datosEmpleado: map['datos_empleado'] != null
+          ? DatosEmpleado.fromMap(
+              Map<String, dynamic>.from(map['datos_empleado']))
+          : null,
+      password: map['contraseña'] ?? '',
     );
   }
 
@@ -51,8 +56,9 @@ class Usuario {
       'telefono': telefono,
       'rol': rol,
       'activo': activo,
-      'datos_cliente': datosCliente,
-      'datos_empleado': datosEmpleado,
+      if (datosCliente != null) 'datos_cliente': datosCliente!.toMap(),
+      if (datosEmpleado != null) 'datos_empleado': datosEmpleado!.toMap(),
+      // 'contraseña': password,  // No se recomienda guardar la contraseña en Firestore
     };
   }
 }
