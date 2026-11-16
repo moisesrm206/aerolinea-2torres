@@ -1,7 +1,16 @@
+import 'package:aerolinea/screens/auth/login_screen.dart';
 import 'package:flutter/material.dart';
-import 'screens/auth/login_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
+
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
   runApp(const Aerolinea2TorresApp());
 }
 
@@ -11,8 +20,10 @@ class Aerolinea2TorresApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Aerolíneas 2Torres',
       debugShowCheckedModeBanner: false,
+
+      title: 'Aerolíneas 2Torres',
+
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
@@ -21,6 +32,7 @@ class Aerolinea2TorresApp extends StatelessWidget {
           secondary: const Color(0xFF00ACC1),
           surface: const Color(0xFFF4F6FA),
         ),
+
         appBarTheme: const AppBarTheme(
           backgroundColor: Color(0xFF0D47A1),
           foregroundColor: Colors.white,
@@ -28,6 +40,8 @@ class Aerolinea2TorresApp extends StatelessWidget {
           elevation: 0,
         ),
       ),
+
+      // Pantalla inicial
       home: const LoginScreen(),
     );
   }
