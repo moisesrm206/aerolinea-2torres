@@ -1,4 +1,4 @@
-import 'package:aerolinea/models/User.dart';
+import 'package:aerolinea/models/usuario.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 //en este archivo se centralizan las operaciones con la base de datos*
 class FirebaseService {

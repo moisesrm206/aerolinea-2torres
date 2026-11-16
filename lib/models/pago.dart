@@ -9,7 +9,8 @@ class Pago {
   final String moneda;
   final String estado;
   final DateTime fechaPago;
-
+  int? penalizacion;
+  int? reembolso;
   Pago({
     required this.idPago,
     required this.idReservacion,
@@ -20,6 +21,8 @@ class Pago {
     required this.moneda,
     required this.estado,
     required this.fechaPago,
+    this.penalizacion,
+    this.reembolso,
   });
 
   factory Pago.fromMap(Map<String, dynamic> map) {

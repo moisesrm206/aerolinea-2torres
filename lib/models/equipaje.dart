@@ -4,6 +4,8 @@ class Equipaje {
   final String idReservacion;
   final String tipo;
   final double pesoKg;
+  final double pesoExcedente;
+  final double cargoExcedente;
   final double cargoAdicional;
   final String estadoRetiro;
 
@@ -12,6 +14,8 @@ class Equipaje {
     required this.idReservacion,
     required this.tipo,
     required this.pesoKg,
+    required this.pesoExcedente,
+    required this.cargoExcedente,
     required this.cargoAdicional,
     required this.estadoRetiro,
   });
@@ -22,6 +26,8 @@ class Equipaje {
       idReservacion: map['id_reservacion'] ?? '',
       tipo: map['tipo'] ?? '',
       pesoKg: (map['peso_kg'] ?? 0).toDouble(),
+      pesoExcedente: (map['peso_excedente'] ?? 0).toDouble(),
+      cargoExcedente: (map['cargo_excedente'] ?? 0).toDouble(),
       cargoAdicional: (map['cargo_adicional'] ?? 0).toDouble(),
       estadoRetiro: map['estado_retiro'] ?? '',
     );
@@ -33,6 +39,8 @@ class Equipaje {
       'id_reservacion': idReservacion,
       'tipo': tipo,
       'peso_kg': pesoKg,
+      'peso_excedente': pesoExcedente,
+      'cargo_excedente': cargoExcedente,
       'cargo_adicional': cargoAdicional,
       'estado_retiro': estadoRetiro,
     };
