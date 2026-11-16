@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../data/mock_data.dart';
-import '../auth/login_screen.dart';
+
+import '../../styles/app_text_styles.dart';
+import '../../widgets/figma_asset.dart';
+import 'remaining_views.dart';
 
 class HomeClienteScreen extends StatefulWidget {
   const HomeClienteScreen({super.key});
@@ -10,876 +12,548 @@ class HomeClienteScreen extends StatefulWidget {
 }
 
 class _HomeClienteScreenState extends State<HomeClienteScreen> {
-  String _tipoViaje = 'Redondo';
-  String _origenTexto = '';
-  String _destinoTexto = '';
-
-  final TextEditingController _origenCtrl = TextEditingController();
-  final TextEditingController _destinoCtrl = TextEditingController();
-
-  DateTime _fechaSalida = DateTime(2026, 11, 20);
-  DateTime _fechaRegreso = DateTime(2026, 11, 27);
-
-  int _adultos = 1;
-  int _ninos = 0;
-  int _bebes = 0;
-  String _clase = 'Económica';
-
-  final List _aeropuertos = [
-    'Ciudad de México (MEX)',
-    'Cancún (CUN)',
-    'Guadalajara (GDL)',
-    'Tijuana (TIJ)',
-    'Monterrey (MTY)',
-    'Madrid (MAD)',
-  ];
-
-  int get _totalPasajeros => _adultos + _ninos + _bebes;
+  bool _roundTrip = false;
 
   @override
-  void dispose() {
-    _origenCtrl.dispose();
-    _destinoCtrl.dispose();
-    super.dispose();
-  }
+  Widget build(BuildContext context) {
+    const background = Color(0xFF0B1426);
+    const panel = Color(0xFF142239);
+    const border = Color(0xFF315778);
+    const text = Color(0xFFEDF3FA);
+    const muted = Color(0xFFA5B4C8);
+    const accent = Color(0xFF5DDBD3);
 
-  String _formatearFecha(DateTime fecha) {
-    const meses = [
-      'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
-      'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'
-    ];
-    return '${fecha.day} ${meses[fecha.month - 1]} ${fecha.year}';
-  }
-
-  void _intercambiarCiudades() {
-    setState(() {
-      final tempTexto = _origenCtrl.text;
-      _origenCtrl.text = _destinoCtrl.text;
-      _destinoCtrl.text = tempTexto;
-      _origenTexto = _origenCtrl.text;
-      _destinoTexto = _destinoCtrl.text;
-    });
-  }
-
-  Future<void> _seleccionarFecha(bool esSalida) async {
-    final elegida = await showDatePicker(
-      context: context,
-      initialDate: esSalida ? _fechaSalida : _fechaRegreso,
-      firstDate: DateTime(2026, 11, 15),
-      lastDate: DateTime(2027, 12, 31),
-    );
-    if (elegida != null) {
-      setState(() {
-        if (esSalida) {
-          _fechaSalida = elegida;
-          if (_fechaRegreso.isBefore(_fechaSalida)) {
-            _fechaRegreso = _fechaSalida.add(const Duration(days: 3));
-          }
-        } else {
-          _fechaRegreso = elegida;
-        }
-      });
-    }
-  }
-
-  void _abrirSelectorPasajerosYClase() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            Widget contadorFila(
-                String titulo, String subtitulo, int valor, Function(int) onChanged,
-                {int min = 0}) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Scaffold(
+      backgroundColor: background,
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(titulo,
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 15)),
-                        Text(subtitulo,
-                            style: const TextStyle(
-                                color: Colors.grey, fontSize: 12)),
-                      ],
+                    SizedBox(
+                      height: 66,
+                      child: Row(
+                        children: [
+                          const Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Hola, viajero',
+                                style: TextStyle(color: muted, fontSize: 13),
+                              ),
+                              SizedBox(height: 3),
+                              Text(
+                                '¿A dónde volamos?',
+                                style: TextStyle(
+                                  color: text,
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const Spacer(),
+                          Container(
+                            width: 42,
+                            height: 42,
+                            decoration: BoxDecoration(
+                              color: panel,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: border),
+                            ),
+                            child: const Center(
+                              child: FigmaAsset(
+                                'bell.svg',
+                                size: 22,
+                                color: text,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
+                    _SearchCard(
+                      panel: panel,
+                      border: border,
+                      text: text,
+                      muted: muted,
+                      accent: accent,
+                      roundTrip: _roundTrip,
+                      onRoundTripChanged: (value) =>
+                          setState(() => _roundTrip = value),
+                    ),
+                    const SizedBox(height: 20),
                     Row(
                       children: [
-                        IconButton.outlined(
-                          onPressed: valor > min
-                              ? () {
-                                  setModalState(() => onChanged(valor - 1));
-                                  setState(() {});
-                                }
-                              : null,
-                          icon: const Icon(Icons.remove, size: 18),
-                        ),
-                        SizedBox(
-                          width: 32,
-                          child: Text(
-                            '$valor',
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold),
+                        const Text(
+                          'Un cambio de aire',
+                          style: TextStyle(
+                            color: text,
+                            fontSize: 19,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        IconButton.outlined(
-                          onPressed: _totalPasajeros < 9
-                              ? () {
-                                  setModalState(() => onChanged(valor + 1));
-                                  setState(() {});
-                                }
-                              : null,
-                          icon: const Icon(Icons.add, size: 18),
+                        const Spacer(),
+                        Text(
+                          'Ver destinos',
+                          style: TextStyle(
+                            color: accent,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: SizedBox(
+                        height: 178,
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            Image.asset(
+                              'lib/assets/figma/mar_caribe.png',
+                              fit: BoxFit.cover,
+                            ),
+                            const DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Colors.transparent,
+                                    Color(0xCC0B1426),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const Positioned(
+                              left: 20,
+                              bottom: 20,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'EL CARIBE TE LLAMA',
+                                    style: TextStyle(
+                                      color: muted,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                  SizedBox(height: 5),
+                                  Text(
+                                    'Cancún, a tu ritmo',
+                                    style: TextStyle(
+                                      color: text,
+                                      fontSize: 25,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  SizedBox(height: 5),
+                                  Text(
+                                    'Playas infinitas. Nuevas historias.',
+                                    style: TextStyle(color: text, fontSize: 12),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        const FigmaAsset(
+                          'headset.svg',
+                          size: 20,
+                          color: accent,
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          'Estamos contigo antes, durante y después.',
+                          style: AppTextStyles.caption.copyWith(color: muted),
                         ),
                       ],
                     ),
                   ],
                 ),
-              );
-            }
-
-            final clasesDisponibles = [
-              {'nombre': 'Económica', 'desc': 'Tarifa base flexible'},
-              {'nombre': 'Económica Premium', 'desc': 'Más espacio + equipaje'},
-              {'nombre': 'Ejecutiva', 'desc': 'Asiento cama + sala VIP'},
-              {'nombre': 'Primera', 'desc': 'Experiencia lujo total'},
-            ];
-
-            return AlertDialog(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
-              contentPadding: const EdgeInsets.all(24),
-              content: SingleChildScrollView(
-                child: SizedBox(
-                  width: 600,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('Pasajeros',
-                          style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF061E47))),
-                      const Divider(),
-                      contadorFila('Adultos', '12+ años', _adultos,
-                          (v) => _adultos = v,
-                          min: 1),
-                      contadorFila(
-                          'Niños', '2 - 11 años', _ninos, (v) => _ninos = v),
-                      contadorFila('Bebés', 'Menores de 2 años', _bebes,
-                          (v) => _bebes = v),
-                      const SizedBox(height: 16),
-                      const Text('Clase de cabina',
-                          style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF061E47))),
-                      const Divider(),
-                      ...clasesDisponibles.map((c) {
-                        return RadioListTile<String>(
-                          contentPadding: EdgeInsets.zero,
-                          dense: true,
-                          title: Text(c['nombre']!,
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.w600)),
-                          subtitle: Text(c['desc']!,
-                              style: const TextStyle(fontSize: 12)),
-                          value: c['nombre']!,
-                          groupValue: _clase,
-                          onChanged: (val) {
-                            setModalState(() => _clase = val!);
-                            setState(() {});
-                          },
-                        );
-                      }),
-                      const SizedBox(height: 16),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: FilledButton(
-                          onPressed: () => Navigator.pop(context),
-                          style: FilledButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 32, vertical: 14),
-                          ),
-                          child: const Text('Listo',
-                              style: TextStyle(fontSize: 16)),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
               ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Widget _construirCampoAeropuerto({
-    required String etiqueta,
-    required String sugerencia,
-    required IconData icono,
-    required TextEditingController controlador,
-    required Function(String) alCambiar,
-  }) {
-    return SizedBox(
-      width: 240,
-      child: Autocomplete<String>(
-        optionsBuilder: (TextEditingValue textEditingValue) {
-          if (textEditingValue.text.isEmpty) {
-            return _aeropuertos.map((e) => e.toString());
-          }
-          return _aeropuertos
-              .map((e) => e.toString())
-              .where((opcion) => opcion
-                  .toLowerCase()
-                  .contains(textEditingValue.text.toLowerCase()));
-        },
-        onSelected: (String seleccion) {
-          controlador.text = seleccion;
-          alCambiar(seleccion);
-        },
-        fieldViewBuilder: (context, textController, focusNode, onFieldSubmitted) {
-          // Sincronizar controlador externo si se intercambiaron ciudades
-          if (textController.text != controlador.text) {
-            textController.text = controlador.text;
-          }
-          return TextField(
-            controller: textController,
-            focusNode: focusNode,
-            onChanged: (val) {
-              controlador.text = val;
-              alCambiar(val);
-            },
-            decoration: InputDecoration(
-              labelText: etiqueta,
-              hintText: sugerencia,
-              prefixIcon: Icon(icono),
-              suffixIcon: textController.text.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.clear, size: 18),
-                      onPressed: () {
-                        textController.clear();
-                        controlador.clear();
-                        alCambiar('');
-                      },
-                    )
-                  : null,
-              border: const OutlineInputBorder(),
             ),
-          );
-        },
+            _BottomNavigation(
+              onItemSelected: (index) {
+                if (index == 0) return;
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => DesignCatalogScreen(
+                      theme: index == 2 ? DesignTheme.dark : DesignTheme.light,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
+}
+
+class _SearchCard extends StatelessWidget {
+  const _SearchCard({
+    required this.panel,
+    required this.border,
+    required this.text,
+    required this.muted,
+    required this.accent,
+    required this.roundTrip,
+    required this.onRoundTripChanged,
+  });
+
+  final Color panel;
+  final Color border;
+  final Color text;
+  final Color muted;
+  final Color accent;
+  final bool roundTrip;
+  final ValueChanged<bool> onRoundTripChanged;
 
   @override
   Widget build(BuildContext context) {
-    final vuelosFiltrados = MockData.vuelos.where((v) {
-      final origenCompleto =
-          '${v['origen']['ciudad']} (${v['origen']['codigo']})'.toLowerCase();
-      final destinoCompleto =
-          '${v['destino']['ciudad']} (${v['destino']['codigo']})'.toLowerCase();
-
-      final coincideOrigen = _origenTexto.trim().isEmpty ||
-          origenCompleto.contains(_origenTexto.trim().toLowerCase());
-      final coincideDestino = _destinoTexto.trim().isEmpty ||
-          destinoCompleto.contains(_destinoTexto.trim().toLowerCase());
-
-      return coincideOrigen && coincideDestino;
-    }).toList();
-
-    return Scaffold(
-      backgroundColor: const Color(0xFFF3F6FB),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // 1. NAVBAR + HERO BANNER
-            Container(
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFF061E47), Color(0xFF0D47A1)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: panel,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: border),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              border: Border.all(color: border),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _TripOption(
+                    label: 'Solo ida',
+                    selected: !roundTrip,
+                    color: accent,
+                    onTap: () => onRoundTripChanged(false),
+                  ),
+                ),
+                Expanded(
+                  child: _TripOption(
+                    label: 'Ida y vuelta',
+                    selected: roundTrip,
+                    color: accent,
+                    onTap: () => onRoundTripChanged(true),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          _RouteField(
+            label: 'Origen',
+            value: 'Ciudad de México · MEX',
+            icon: 'plane_takeoff.svg',
+            text: text,
+            muted: muted,
+          ),
+          const SizedBox(height: 12),
+          _RouteField(
+            label: 'Destino',
+            value: 'Cancún · CUN',
+            icon: 'plane_landing.svg',
+            text: text,
+            muted: muted,
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _InfoField(
+                  label: 'Salida',
+                  value: '18 nov 2026',
+                  icon: 'calendar_days.svg',
+                  text: text,
+                  muted: muted,
                 ),
               ),
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 1200),
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 36),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Wrap(
-                          alignment: WrapAlignment.spaceBetween,
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          runSpacing: 12,
-                          children: [
-                            const Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.flight_takeoff,
-                                    color: Colors.amber, size: 30),
-                                SizedBox(width: 10),
-                                Text(
-                                  'Aerolíneas 2Torres',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Wrap(
-                              spacing: 8,
-                              children: [
-                                TextButton.icon(
-                                  onPressed: () {},
-                                  icon: const Icon(Icons.airplane_ticket,
-                                      color: Colors.white),
-                                  label: const Text('Mis Vuelos',
-                                      style: TextStyle(color: Colors.white)),
-                                ),
-                                TextButton.icon(
-                                  onPressed: () {},
-                                  icon: const Icon(Icons.qr_code,
-                                      color: Colors.white),
-                                  label: const Text('Check-in',
-                                      style: TextStyle(color: Colors.white)),
-                                ),
-                                OutlinedButton.icon(
-                                  onPressed: () {
-                                    Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (_) => const LoginScreen()),
-                                    );
-                                  },
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: Colors.white,
-                                    side:
-                                        const BorderSide(color: Colors.white54),
-                                  ),
-                                  icon: const Icon(Icons.logout, size: 18),
-                                  label: const Text('Salir'),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-                        const Text(
-                          'Reserva vuelos con Aerolíneas 2Torres',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        const Text(
-                          'Escribe tu ciudad o código IATA para encontrar tu vuelo ideal.',
-                          style: TextStyle(color: Colors.white70, fontSize: 15),
-                        ),
-                        const SizedBox(height: 20),
-
-                        // 2. CAJA DE BÚSQUEDA CON CAMPOS DE TEXTO AUTOCOMPLETABLES
-                        Card(
-                          elevation: 8,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: Column(
-                              children: [
-                                Row(
-                                  children: [
-                                    ChoiceChip(
-                                      label: const Text('Viaje redondo'),
-                                      selected: _tipoViaje == 'Redondo',
-                                      onSelected: (_) =>
-                                          setState(() => _tipoViaje = 'Redondo'),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    ChoiceChip(
-                                      label: const Text('Viaje sencillo'),
-                                      selected: _tipoViaje == 'Sencillo',
-                                      onSelected: (_) => setState(
-                                          () => _tipoViaje = 'Sencillo'),
-                                    ),
-                                    const Spacer(),
-                                    if (_origenTexto.isNotEmpty ||
-                                        _destinoTexto.isNotEmpty)
-                                      TextButton.icon(
-                                        onPressed: () {
-                                          setState(() {
-                                            _origenCtrl.clear();
-                                            _destinoCtrl.clear();
-                                            _origenTexto = '';
-                                            _destinoTexto = '';
-                                          });
-                                        },
-                                        icon:
-                                            const Icon(Icons.refresh, size: 18),
-                                        label: const Text('Limpiar'),
-                                      ),
-                                  ],
-                                ),
-                                const Divider(height: 20),
-                                Wrap(
-                                  spacing: 10,
-                                  runSpacing: 12,
-                                  crossAxisAlignment: WrapCrossAlignment.center,
-                                  children: [
-                                    _construirCampoAeropuerto(
-                                      etiqueta: 'Origen',
-                                      sugerencia: 'Ej. Ciudad de México o MEX',
-                                      icono: Icons.flight_takeoff,
-                                      controlador: _origenCtrl,
-                                      alCambiar: (val) =>
-                                          setState(() => _origenTexto = val),
-                                    ),
-                                    IconButton.filledTonal(
-                                      onPressed: _intercambiarCiudades,
-                                      tooltip: 'Intercambiar origen y destino',
-                                      icon: const Icon(Icons.swap_horiz),
-                                    ),
-                                    _construirCampoAeropuerto(
-                                      etiqueta: 'Destino',
-                                      sugerencia: 'Ej. Cancún o CUN',
-                                      icono: Icons.flight_land,
-                                      controlador: _destinoCtrl,
-                                      alCambiar: (val) =>
-                                          setState(() => _destinoTexto = val),
-                                    ),
-                                    SizedBox(
-                                      width: 155,
-                                      child: InkWell(
-                                        onTap: () => _seleccionarFecha(true),
-                                        child: InputDecorator(
-                                          decoration: const InputDecoration(
-                                            labelText: 'Salida',
-                                            prefixIcon: Icon(
-                                                Icons.calendar_today,
-                                                size: 18),
-                                            border: OutlineInputBorder(),
-                                          ),
-                                          child: Text(
-                                            _formatearFecha(_fechaSalida),
-                                            style:
-                                                const TextStyle(fontSize: 13),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    if (_tipoViaje == 'Redondo')
-                                      SizedBox(
-                                        width: 155,
-                                        child: InkWell(
-                                          onTap: () => _seleccionarFecha(false),
-                                          child: InputDecorator(
-                                            decoration: const InputDecoration(
-                                              labelText: 'Retorno',
-                                              prefixIcon: Icon(
-                                                  Icons.calendar_today,
-                                                  size: 18),
-                                              border: OutlineInputBorder(),
-                                            ),
-                                            child: Text(
-                                              _formatearFecha(_fechaRegreso),
-                                              style:
-                                                  const TextStyle(fontSize: 13),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    SizedBox(
-                                      width: 215,
-                                      child: InkWell(
-                                        onTap: _abrirSelectorPasajerosYClase,
-                                        child: InputDecorator(
-                                          decoration: const InputDecoration(
-                                            labelText: 'Personas, clase',
-                                            prefixIcon: Icon(Icons.person),
-                                            suffixIcon:
-                                                Icon(Icons.arrow_drop_down),
-                                            border: OutlineInputBorder(),
-                                          ),
-                                          child: Text(
-                                            '$_totalPasajeros, $_clase',
-                                            overflow: TextOverflow.ellipsis,
-                                            style: const TextStyle(
-                                                fontWeight: FontWeight.w500),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _InfoField(
+                  label: 'Pasajeros',
+                  value: '1 adulto',
+                  icon: 'user_round.svg',
+                  text: text,
+                  muted: muted,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            height: 54,
+            child: FilledButton.icon(
+              onPressed: () {},
+              icon: const Icon(Icons.search, color: Color(0xFF08252D)),
+              label: const Text('Buscar vuelos'),
+              style: FilledButton.styleFrom(
+                backgroundColor: accent,
+                foregroundColor: const Color(0xFF08252D),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                textStyle: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
-            // 3. LISTA DE VUELOS ADAPTABLE A MÓVIL Y WEB
-            Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1200),
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Wrap(
-                        alignment: WrapAlignment.spaceBetween,
-                        spacing: 12,
-                        runSpacing: 4,
-                        children: [
-                          Text(
-                            'Vuelos disponibles (${vuelosFiltrados.length})',
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF061E47),
-                            ),
-                          ),
-                          Text(
-                            '$_totalPasajeros ${_totalPasajeros == 1 ? 'pasajero' : 'pasajeros'} • Cabina $_clase',
-                            style: const TextStyle(color: Colors.grey),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      if (vuelosFiltrados.isEmpty)
-                        Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(32),
-                            child: Center(
-                              child: Column(
-                                children: [
-                                  const Text(
-                                    'No encontramos vuelos que coincidan con tu búsqueda.',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(fontSize: 16),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  FilledButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        _origenCtrl.clear();
-                                        _destinoCtrl.clear();
-                                        _origenTexto = '';
-                                        _destinoTexto = '';
-                                      });
-                                    },
-                                    child: const Text('Mostrar todos los vuelos'),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        )
-                      else
-                        ...vuelosFiltrados.map((vuelo) {
-                          final esRetrasado = vuelo['estado'] == 'Retrasado';
-                          final precioUnitario =
-                              vuelo['tarifas'][_clase] as double;
-                          final precioTotal = precioUnitario * _totalPasajeros;
+class _TripOption extends StatelessWidget {
+  const _TripOption({
+    required this.label,
+    required this.selected,
+    required this.color,
+    required this.onTap,
+  });
+  final String label;
+  final bool selected;
+  final Color color;
+  final VoidCallback onTap;
 
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 16),
-                            elevation: 2,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(20),
-                              child: LayoutBuilder(
-                                builder: (context, constraints) {
-                                  final esMovil = constraints.maxWidth < 650;
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 36,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: selected ? color : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selected ? const Color(0xFF08252D) : const Color(0xFFA5B4C8),
+            fontSize: 13,
+            fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+      ),
+    );
+  }
+}
 
-                                  final infoVuelo = Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Wrap(
-                                        spacing: 8,
-                                        runSpacing: 6,
-                                        crossAxisAlignment:
-                                            WrapCrossAlignment.center,
-                                        children: [
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 10, vertical: 4),
-                                            decoration: BoxDecoration(
-                                              color: const Color(0xFFE3F2FD),
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                            ),
-                                            child: Text(
-                                              'Vuelo ${vuelo['numero_vuelo']} • ${vuelo['aeronave']}',
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                color: Color(0xFF0D47A1),
-                                              ),
-                                            ),
-                                          ),
-                                          Chip(
-                                            label: Text(
-                                              vuelo['estado'],
-                                              style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 12),
-                                            ),
-                                            backgroundColor: esRetrasado
-                                                ? Colors.orange
-                                                : Colors.green,
-                                            visualDensity:
-                                                VisualDensity.compact,
-                                          ),
-                                          Text(
-                                            'Puerta ${vuelo['puerta']}',
-                                            style: const TextStyle(
-                                                color: Colors.grey,
-                                                fontWeight: FontWeight.w500),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 16),
-                                      Row(
-                                        children: [
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(vuelo['origen']['codigo'],
-                                                  style: const TextStyle(
-                                                      fontSize: 26,
-                                                      fontWeight:
-                                                          FontWeight.bold)),
-                                              Text(vuelo['origen']['ciudad'],
-                                                  style: const TextStyle(
-                                                      color: Colors.grey,
-                                                      fontSize: 13)),
-                                            ],
-                                          ),
-                                          Expanded(
-                                            child: Column(
-                                              children: [
-                                                Text(
-                                                  '${vuelo['duracion_min']} min • Directo',
-                                                  style: const TextStyle(
-                                                      fontSize: 12,
-                                                      color: Colors.grey),
-                                                ),
-                                                const Row(
-                                                  children: [
-                                                    Expanded(child: Divider()),
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsets.symmetric(
-                                                              horizontal: 8),
-                                                      child: Icon(
-                                                          Icons.flight_takeoff,
-                                                          color: Color(
-                                                              0xFF0D47A1)),
-                                                    ),
-                                                    Expanded(child: Divider()),
-                                                  ],
-                                                ),
-                                                Text(
-                                                  vuelo['fecha_salida'],
-                                                  textAlign: TextAlign.center,
-                                                  style: const TextStyle(
-                                                      fontSize: 12,
-                                                      fontWeight:
-                                                          FontWeight.w600),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.end,
-                                            children: [
-                                              Text(vuelo['destino']['codigo'],
-                                                  style: const TextStyle(
-                                                      fontSize: 26,
-                                                      fontWeight:
-                                                          FontWeight.bold)),
-                                              Text(vuelo['destino']['ciudad'],
-                                                  style: const TextStyle(
-                                                      color: Colors.grey,
-                                                      fontSize: 13)),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 12),
-                                      Row(
-                                        children: [
-                                          const Icon(Icons.luggage,
-                                              size: 16, color: Colors.teal),
-                                          const SizedBox(width: 6),
-                                          Expanded(
-                                            child: Text(
-                                              vuelo['equipaje_incluido'],
-                                              style: const TextStyle(
-                                                  fontSize: 12,
-                                                  color: Colors.teal,
-                                                  fontWeight: FontWeight.w500),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  );
+class _RouteField extends StatelessWidget {
+  const _RouteField({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.text,
+    required this.muted,
+  });
+  final String label;
+  final String value;
+  final String icon;
+  final Color text;
+  final Color muted;
 
-                                  final infoPrecio = Column(
-                                    crossAxisAlignment: esMovil
-                                        ? CrossAxisAlignment.stretch
-                                        : CrossAxisAlignment.end,
-                                    children: [
-                                      if (esMovil) const Divider(height: 24),
-                                      Row(
-                                        mainAxisAlignment: esMovil
-                                            ? MainAxisAlignment.spaceBetween
-                                            : MainAxisAlignment.end,
-                                        children: [
-                                          if (esMovil)
-                                            Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 8,
-                                                      vertical: 2),
-                                              decoration: BoxDecoration(
-                                                color: Colors.amber.shade100,
-                                                borderRadius:
-                                                    BorderRadius.circular(6),
-                                              ),
-                                              child: Text(
-                                                'Cabina $_clase',
-                                                style: TextStyle(
-                                                    fontSize: 11,
-                                                    fontWeight: FontWeight.bold,
-                                                    color:
-                                                        Colors.amber.shade900),
-                                              ),
-                                            ),
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.end,
-                                            children: [
-                                              if (!esMovil)
-                                                Container(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
-                                                      horizontal: 8,
-                                                      vertical: 2),
-                                                  decoration: BoxDecoration(
-                                                    color:
-                                                        Colors.amber.shade100,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            6),
-                                                  ),
-                                                  child: Text(
-                                                    'Cabina $_clase',
-                                                    style: TextStyle(
-                                                        fontSize: 11,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        color: Colors
-                                                            .amber.shade900),
-                                                  ),
-                                                ),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                '\$${precioTotal.toStringAsFixed(0)} MXN',
-                                                style: const TextStyle(
-                                                  fontSize: 22,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Color(0xFF0D47A1),
-                                                ),
-                                              ),
-                                              Text(
-                                                _totalPasajeros > 1
-                                                    ? '(\$${precioUnitario.toStringAsFixed(0)} c/u)'
-                                                    : 'Impuestos incluidos',
-                                                style: const TextStyle(
-                                                    fontSize: 11,
-                                                    color: Colors.grey),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 12),
-                                      SizedBox(
-                                        width: esMovil
-                                            ? double.infinity
-                                            : 160,
-                                        height: 42,
-                                        child: FilledButton(
-                                          onPressed: () {
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(
-                                              SnackBar(
-                                                content: Text(
-                                                    'Vuelo ${vuelo['numero_vuelo']} seleccionado ($_totalPasajeros pax, $_clase)'),
-                                              ),
-                                            );
-                                          },
-                                          child: const Text('Elegir vuelo'),
-                                        ),
-                                      ),
-                                    ],
-                                  );
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: TextStyle(color: muted, fontSize: 12)),
+        const SizedBox(height: 6),
+        Container(
+          height: 54,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          child: Row(
+            children: [
+              FigmaAsset(icon, size: 19, color: const Color(0xFF5DDBD3)),
+              const SizedBox(width: 12),
+              Text(value, style: TextStyle(color: text, fontSize: 15)),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
 
-                                  if (esMovil) {
-                                    return Column(
-                                      children: [infoVuelo, infoPrecio],
-                                    );
-                                  }
+class _InfoField extends StatelessWidget {
+  const _InfoField({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.text,
+    required this.muted,
+  });
+  final String label;
+  final String value;
+  final String icon;
+  final Color text;
+  final Color muted;
 
-                                  return Row(
-                                    children: [
-                                      Expanded(flex: 3, child: infoVuelo),
-                                      Container(
-                                        height: 110,
-                                        width: 1,
-                                        color: Colors.grey.shade300,
-                                        margin: const EdgeInsets.symmetric(
-                                            horizontal: 20),
-                                      ),
-                                      Expanded(flex: 1, child: infoPrecio),
-                                    ],
-                                  );
-                                },
-                              ),
-                            ),
-                          );
-                        }),
-                    ],
-                  ),
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: TextStyle(color: muted, fontSize: 12)),
+        const SizedBox(height: 5),
+        Row(
+          children: [
+            FigmaAsset(icon, size: 20, color: const Color(0xFF5DDBD3)),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                value,
+                style: TextStyle(
+                  color: text,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
                 ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _BottomNavigation extends StatelessWidget {
+  const _BottomNavigation({required this.onItemSelected});
+
+  final ValueChanged<int> onItemSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    const muted = Color(0xFFA5B4C8);
+    const text = Color(0xFFEDF3FA);
+    const accent = Color(0xFF5DDBD3);
+    const panel = Color(0xFF142239);
+    return Container(
+      height: 80,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: const BoxDecoration(
+        color: panel,
+        border: Border(top: BorderSide(color: Color(0xFF34465E))),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          _NavItem(
+            label: 'Inicio',
+            icon: 'home.svg',
+            selected: true,
+            accent: accent,
+            text: text,
+            muted: muted,
+            onTap: () => onItemSelected(0),
+          ),
+          _NavItem(
+            label: 'Mis vuelos',
+            icon: 'tickets_plane.svg',
+            accent: accent,
+            text: text,
+            muted: muted,
+            onTap: () => onItemSelected(1),
+          ),
+          _NavItem(
+            label: 'Actividad',
+            icon: 'chart.svg',
+            accent: accent,
+            text: text,
+            muted: muted,
+            onTap: () => onItemSelected(2),
+          ),
+          _NavItem(
+            label: 'Perfil',
+            icon: 'user_round.svg',
+            accent: accent,
+            text: text,
+            muted: muted,
+            onTap: () => onItemSelected(3),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NavItem extends StatelessWidget {
+  const _NavItem({
+    required this.label,
+    required this.icon,
+    required this.accent,
+    required this.text,
+    required this.muted,
+    required this.onTap,
+    this.selected = false,
+  });
+  final String label;
+  final String icon;
+  final Color accent;
+  final Color text;
+  final Color muted;
+  final VoidCallback onTap;
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: SizedBox(
+        width: 83,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 60,
+              height: 30,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: selected ? accent : Colors.transparent,
+                borderRadius: BorderRadius.circular(100),
+              ),
+              child: FigmaAsset(
+                icon,
+                size: 21,
+                color: selected ? const Color(0xFF08252D) : muted,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: selected ? text : muted,
+                fontSize: 11,
+                fontWeight: selected ? FontWeight.bold : FontWeight.normal,
               ),
             ),
           ],
